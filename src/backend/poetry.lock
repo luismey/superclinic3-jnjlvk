@@ -1,0 +1,168 @@
+[[package]]
+name = "fastapi"
+version = "0.100.0"
+description = "FastAPI framework, high performance, easy to learn, fast to code, ready for production"
+category = "main"
+optional = false
+python-versions = ">=3.11"
+files = [
+    {file = "fastapi-0.100.0-py3-none-any.whl", hash = "sha256:..."},
+    {file = "fastapi-0.100.0.tar.gz", hash = "sha256:..."}
+]
+
+[package.dependencies]
+pydantic = ">=2.0.0"
+starlette = ">=0.27.0"
+typing-extensions = ">=4.5.0"
+
+[[package]]
+name = "uvicorn"
+version = "0.23.0"
+description = "Lightning-fast ASGI server implementation"
+category = "main"
+optional = false
+python-versions = ">=3.11"
+files = [
+    {file = "uvicorn-0.23.0-py3-none-any.whl", hash = "sha256:..."},
+    {file = "uvicorn-0.23.0.tar.gz", hash = "sha256:..."}
+]
+
+[package.dependencies]
+click = ">=7.0"
+h11 = ">=0.8"
+typing-extensions = ">=4.0"
+
+[[package]]
+name = "gunicorn"
+version = "21.2.0"
+description = "WSGI HTTP Server for UNIX"
+category = "main"
+optional = false
+python-versions = ">=3.11"
+files = [
+    {file = "gunicorn-21.2.0-py3-none-any.whl", hash = "sha256:..."},
+    {file = "gunicorn-21.2.0.tar.gz", hash = "sha256:..."}
+]
+
+[package.dependencies]
+packaging = "*"
+
+[[package]]
+name = "pydantic"
+version = "2.0.0"
+description = "Data validation using Python type hints"
+category = "main"
+optional = false
+python-versions = ">=3.11"
+files = [
+    {file = "pydantic-2.0.0-py3-none-any.whl", hash = "sha256:..."},
+    {file = "pydantic-2.0.0.tar.gz", hash = "sha256:..."}
+]
+
+[package.dependencies]
+typing-extensions = ">=4.6.1"
+annotated-types = ">=0.4.0"
+
+[[package]]
+name = "sqlalchemy"
+version = "2.0.0"
+description = "Database Abstraction Library"
+category = "main"
+optional = false
+python-versions = ">=3.11"
+files = [
+    {file = "SQLAlchemy-2.0.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:..."},
+    {file = "SQLAlchemy-2.0.0.tar.gz", hash = "sha256:..."}
+]
+
+[package.dependencies]
+typing-extensions = ">=4.2.0"
+greenlet = ">=2.0.1"
+
+[[package]]
+name = "firebase-admin"
+version = "6.2.0"
+description = "Firebase Admin Python SDK"
+category = "main"
+optional = false
+python-versions = ">=3.11"
+files = [
+    {file = "firebase_admin-6.2.0-py3-none-any.whl", hash = "sha256:..."},
+    {file = "firebase_admin-6.2.0.tar.gz", hash = "sha256:..."}
+]
+
+[package.dependencies]
+google-api-core = ">=2.0.0"
+google-cloud-firestore = ">=2.9.1"
+google-cloud-storage = ">=2.7.0"
+
+[[package]]
+name = "redis"
+version = "4.6.0"
+description = "Python client for Redis database and key-value store"
+category = "main"
+optional = false
+python-versions = ">=3.11"
+files = [
+    {file = "redis-4.6.0-py3-none-any.whl", hash = "sha256:..."},
+    {file = "redis-4.6.0.tar.gz", hash = "sha256:..."}
+]
+
+[package.dependencies]
+async-timeout = ">=4.0.2"
+packaging = ">=20.4"
+
+[[package]]
+name = "opentelemetry-api"
+version = "1.20.0"
+description = "OpenTelemetry Python API"
+category = "main"
+optional = false
+python-versions = ">=3.11"
+files = [
+    {file = "opentelemetry_api-1.20.0-py3-none-any.whl", hash = "sha256:..."},
+    {file = "opentelemetry_api-1.20.0.tar.gz", hash = "sha256:..."}
+]
+
+[package.dependencies]
+deprecated = ">=1.2.6"
+typing-extensions = ">=3.7.4"
+
+[[package]]
+name = "opentelemetry-sdk"
+version = "1.20.0"
+description = "OpenTelemetry Python SDK"
+category = "main"
+optional = false
+python-versions = ">=3.11"
+files = [
+    {file = "opentelemetry_sdk-1.20.0-py3-none-any.whl", hash = "sha256:..."},
+    {file = "opentelemetry_sdk-1.20.0.tar.gz", hash = "sha256:..."}
+]
+
+[package.dependencies]
+opentelemetry-api = "==1.20.0"
+opentelemetry-semantic-conventions = "==0.41b0"
+
+[[package]]
+name = "opentelemetry-instrumentation-fastapi"
+version = "0.41b0"
+description = "OpenTelemetry FastAPI Instrumentation"
+category = "main"
+optional = false
+python-versions = ">=3.11"
+files = [
+    {file = "opentelemetry_instrumentation_fastapi-0.41b0-py3-none-any.whl", hash = "sha256:..."},
+    {file = "opentelemetry_instrumentation_fastapi-0.41b0.tar.gz", hash = "sha256:..."}
+]
+
+[package.dependencies]
+opentelemetry-api = ">=1.20.0"
+opentelemetry-instrumentation = "==0.41b0"
+opentelemetry-util-http = "==0.41b0"
+
+[metadata]
+lock-version = "2.0"
+python-versions = ">=3.11"
+content-hash = "sha256:..."
+generated-at = "2023-07-20T10:00:00Z"
