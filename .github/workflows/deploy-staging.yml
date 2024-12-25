@@ -1,0 +1,219 @@
+name: Deploy to Staging
+
+# Trigger on pushes to develop branch or manual dispatch
+on:
+  push:
+    branches:
+      - develop
+    paths:
+      - 'src/backend/**'
+      - 'src/web/**'
+      - 'infrastructure/**'
+  workflow_dispatch:
+
+# Environment variables
+env:
+  GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  GCP_REGION: southamerica-east1
+  ENVIRONMENT: staging
+
+# Concurrency control to prevent parallel deployments
+concurrency:
+  group: staging
+  cancel-in-progress: true
+
+# Required permissions for the workflow
+permissions:
+  contents: read
+  id-token: write
+  deployments: write
+
+jobs:
+  build-and-test-backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r src/backend/requirements.txt
+          pip install pytest pytest-cov bandit safety
+
+      - name: Run tests with coverage
+        run: |
+          pytest src/backend/tests/ --cov=src/backend --cov-report=xml
+
+      - name: Run security scan
+        run: |
+          bandit -r src/backend/ -f json -o bandit-results.json
+          safety check
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: backend-test-results
+          path: |
+            coverage.xml
+            bandit-results.json
+
+  build-and-test-frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: |
+          cd src/web
+          yarn install --frozen-lockfile
+
+      - name: Run tests
+        run: |
+          cd src/web
+          yarn test --coverage
+
+      - name: Run security audit
+        run: |
+          cd src/web
+          yarn audit
+          yarn audit-dependencies
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: frontend-test-results
+          path: src/web/coverage
+
+  deploy-staging:
+    needs: [build-and-test-backend, build-and-test-frontend]
+    runs-on: ubuntu-latest
+    environment: 
+      name: staging
+      url: ${{ steps.deploy.outputs.url }}
+    timeout-minutes: 45
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Auth GCP
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          project_id: ${{ env.GCP_PROJECT_ID }}
+
+      - name: Setup Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          version: '>= 363.0.0'
+          install_components: 'beta,kubectl'
+
+      - name: Configure Docker
+        run: gcloud auth configure-docker
+
+      - name: Build and push backend
+        run: |
+          docker build \
+            --build-arg BUILD_VERSION=${{ github.sha }} \
+            --build-arg ENVIRONMENT=${{ env.ENVIRONMENT }} \
+            -t gcr.io/${{ env.GCP_PROJECT_ID }}/backend:${{ github.sha }} \
+            -t gcr.io/${{ env.GCP_PROJECT_ID }}/backend:staging \
+            src/backend/
+          docker push gcr.io/${{ env.GCP_PROJECT_ID }}/backend:${{ github.sha }}
+          docker push gcr.io/${{ env.GCP_PROJECT_ID }}/backend:staging
+
+      - name: Build and push frontend
+        run: |
+          docker build \
+            --build-arg BUILD_VERSION=${{ github.sha }} \
+            --build-arg ENVIRONMENT=${{ env.ENVIRONMENT }} \
+            -t gcr.io/${{ env.GCP_PROJECT_ID }}/frontend:${{ github.sha }} \
+            -t gcr.io/${{ env.GCP_PROJECT_ID }}/frontend:staging \
+            src/web/
+          docker push gcr.io/${{ env.GCP_PROJECT_ID }}/frontend:${{ github.sha }}
+          docker push gcr.io/${{ env.GCP_PROJECT_ID }}/frontend:staging
+
+      - name: Deploy to Cloud Run
+        id: deploy
+        run: |
+          # Deploy new revision of backend service
+          gcloud run deploy backend-staging \
+            --image gcr.io/${{ env.GCP_PROJECT_ID }}/backend:${{ github.sha }} \
+            --region ${{ env.GCP_REGION }} \
+            --platform managed \
+            --memory 2Gi \
+            --cpu 2 \
+            --min-instances 1 \
+            --max-instances 10 \
+            --port 8000 \
+            --tag staging-${{ github.sha }} \
+            --no-traffic
+
+          # Deploy new revision of frontend service
+          gcloud run deploy frontend-staging \
+            --image gcr.io/${{ env.GCP_PROJECT_ID }}/frontend:${{ github.sha }} \
+            --region ${{ env.GCP_REGION }} \
+            --platform managed \
+            --memory 1Gi \
+            --cpu 1 \
+            --min-instances 1 \
+            --max-instances 5 \
+            --port 3000 \
+            --tag staging-${{ github.sha }} \
+            --no-traffic
+
+          # Store service URLs
+          BACKEND_URL=$(gcloud run services describe backend-staging --region ${{ env.GCP_REGION }} --format='value(status.url)')
+          FRONTEND_URL=$(gcloud run services describe frontend-staging --region ${{ env.GCP_REGION }} --format='value(status.url)')
+          echo "::set-output name=url::${FRONTEND_URL}"
+
+      - name: Run smoke tests
+        run: |
+          # Wait for services to be ready
+          sleep 30
+
+          # Test backend health endpoint
+          curl -f "${BACKEND_URL}/_health" || exit 1
+          
+          # Test frontend health endpoint
+          curl -f "${FRONTEND_URL}/api/health" || exit 1
+
+      - name: Migrate traffic
+        if: success()
+        run: |
+          # Migrate traffic to new revision for backend
+          gcloud run services update-traffic backend-staging \
+            --region ${{ env.GCP_REGION }} \
+            --to-tags staging-${{ github.sha }}=100
+
+          # Migrate traffic to new revision for frontend
+          gcloud run services update-traffic frontend-staging \
+            --region ${{ env.GCP_REGION }} \
+            --to-tags staging-${{ github.sha }}=100
+
+      - name: Notify deployment status
+        if: always()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
