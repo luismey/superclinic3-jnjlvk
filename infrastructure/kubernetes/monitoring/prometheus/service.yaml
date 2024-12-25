@@ -1,0 +1,41 @@
+# Prometheus Service Configuration
+# Version: v1
+# Purpose: Exposes Prometheus server internally for metric collection and monitoring
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: prometheus
+  namespace: monitoring
+  labels:
+    app: prometheus
+    component: monitoring
+  annotations:
+    # Enable Prometheus to scrape its own metrics
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+    prometheus.io/path: "/metrics"
+    # Mark as critical infrastructure component
+    monitoring.porfin.io/critical: "true"
+    description: "Prometheus monitoring service endpoint"
+
+spec:
+  # Select pods with label app=prometheus
+  selector:
+    app: prometheus
+
+  # Define the service ports
+  ports:
+    - name: prometheus-metrics
+      port: 9090  # Service port
+      targetPort: 9090  # Container port
+      protocol: TCP
+
+  # Use ClusterIP for internal access only
+  type: ClusterIP
+
+  # Don't maintain session affinity
+  sessionAffinity: None
+
+  # Only publish endpoints when pods are ready
+  publishNotReadyAddresses: false
