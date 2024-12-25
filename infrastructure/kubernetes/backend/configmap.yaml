@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  namespace: default
+  labels:
+    app: porfin
+    component: backend
+    environment: production
+  annotations:
+    description: Configuration for FastAPI backend service
+    version: 0.1.0
+
+data:
+  # Core Application Settings
+  PROJECT_NAME: "porfin"
+  VERSION: "0.1.0"
+  API_V1_PREFIX: "/api/v1"
+  ENVIRONMENT: "production"
+  DEBUG: "false"
+
+  # CORS Configuration
+  CORS_ORIGINS: "https://app.porfin.com"
+  CORS_METHODS: "GET,POST,PUT,DELETE,OPTIONS"
+  CORS_HEADERS: "Content-Type,Authorization,X-Request-ID"
+
+  # Redis Configuration
+  REDIS_HOST: "redis-master"
+  REDIS_PORT: "6379"
+  REDIS_DB: "0"
+  REDIS_MAX_CONNECTIONS: "100"
+
+  # OpenAI Integration Settings
+  OPENAI_MODEL: "gpt-4"
+  OPENAI_MAX_TOKENS: "2048"
+  OPENAI_TEMPERATURE: "0.7"
+
+  # WhatsApp Integration Settings
+  WHATSAPP_API_URL: "https://graph.facebook.com"
+  WHATSAPP_API_VERSION: "v17.0"
+  WHATSAPP_MESSAGE_QUEUE: "whatsapp-messages"
+
+  # Rate Limiting Configuration
+  RATE_LIMIT_REQUESTS: "100"
+  RATE_LIMIT_PERIOD: "60"
+  RATE_LIMIT_STRATEGY: "fixed-window"
+
+  # Observability Settings
+  LOG_LEVEL: "INFO"
+  METRICS_ENABLED: "true"
+  TRACING_ENABLED: "true"
