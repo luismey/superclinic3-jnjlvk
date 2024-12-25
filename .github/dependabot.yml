@@ -1,0 +1,134 @@
+version: 2
+updates:
+  # Python backend dependencies configuration
+  - package-ecosystem: "pip"
+    directory: "/src/backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "America/Sao_Paulo"
+    labels:
+      - "dependencies"
+      - "backend"
+      - "security"
+    assignees:
+      - "porfin-maintainers"
+    reviewers:
+      - "porfin-maintainers"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+    groups:
+      fastapi-dependencies:
+        patterns:
+          - "fastapi"
+          - "pydantic"
+          - "starlette"
+          - "uvicorn"
+        update-types:
+          - "major"
+          - "minor"
+          - "patch"
+      testing-dependencies:
+        patterns:
+          - "pytest*"
+          - "coverage"
+          - "black"
+          - "flake8"
+        update-types:
+          - "minor"
+          - "patch"
+      security-critical:
+        patterns:
+          - "cryptography"
+          - "python-jose"
+          - "passlib"
+        update-types:
+          - "major"
+          - "minor"
+          - "patch"
+    ignore:
+      - dependency-name: "sqlalchemy"
+        update-types: ["major"]
+    vulnerability-alerts:
+      enabled: true
+
+  # Node.js frontend dependencies configuration
+  - package-ecosystem: "npm"
+    directory: "/src/web"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "America/Sao_Paulo"
+    labels:
+      - "dependencies"
+      - "frontend"
+      - "security"
+    assignees:
+      - "porfin-maintainers"
+    reviewers:
+      - "porfin-maintainers"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+    groups:
+      react-dependencies:
+        patterns:
+          - "react*"
+          - "next*"
+          - "@radix-ui/*"
+        update-types:
+          - "minor"
+          - "patch"
+      testing-dependencies:
+        patterns:
+          - "jest*"
+          - "@testing-library/*"
+          - "cypress"
+        update-types:
+          - "minor"
+          - "patch"
+      security-critical:
+        patterns:
+          - "jsonwebtoken"
+          - "crypto-js"
+        update-types:
+          - "major"
+          - "minor"
+          - "patch"
+    ignore:
+      - dependency-name: "typescript"
+        update-types: ["major"]
+    vulnerability-alerts:
+      enabled: true
+
+  # GitHub Actions workflow dependencies configuration
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+      time: "09:00"
+      timezone: "America/Sao_Paulo"
+    labels:
+      - "dependencies"
+      - "ci"
+      - "security"
+    assignees:
+      - "porfin-maintainers"
+    reviewers:
+      - "porfin-maintainers"
+    commit-message:
+      prefix: "chore(ci)"
+      include: "scope"
+    groups:
+      actions:
+        patterns:
+          - "actions/*"
+        update-types:
+          - "major"
+          - "minor"
+          - "patch"
+    vulnerability-alerts:
+      enabled: true
