@@ -1,0 +1,93 @@
+.git
+.github
+
+# Dependencies
+node_modules
+
+# Build outputs
+.next
+out
+coverage
+
+# Environment and secrets
+.env*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Documentation
+README.md
+CHANGELOG.md
+LICENSE
+*.md
+
+# Test files
+tests
+__tests__
+**/*.test.*
+**/*.spec.*
+**/test-utils
+**/mocks
+**/fixtures
+
+# Development configs
+.eslintrc*
+.prettierrc*
+.editorconfig
+.vscode
+.idea
+*.config.js
+*.config.ts
+jest.config.*
+jest.setup.*
+tsconfig.*
+babel.config.*
+
+# Docker files
+.dockerignore
+Dockerfile
+docker-compose*
+
+# Misc
+.DS_Store
+*.pem
+.npmrc
+.yarnrc
+*.tsbuildinfo
+.vercel
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Cache directories
+.npm
+.yarn
+.pnp.*
+
+# Debug files
+.debug
+*.debug
+
+# Build performance artifacts
+stats.json
+bundle-analysis.json
+.webpack
+.cache
+
+# CI/CD
+cloudbuild.yaml
+.gitlab-ci.yml
+.travis.yml
+.circleci
+
+# Development tools
+.husky
+.lint-staged
+.storybook
+stories
+__snapshots__
