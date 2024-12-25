@@ -1,0 +1,31 @@
+node_modules
+
+# Build outputs
+.next
+build
+.vercel
+
+# Static and public assets
+public
+
+# Test and coverage
+coverage
+
+# Package files
+package.json
+package-lock.json
+yarn.lock
+
+# Environment and configuration
+.env*
+.gitignore
+
+# Documentation
+README.md
+
+# Log files
+*.log
+
+# Minified files
+*.min.js
+*.min.css
