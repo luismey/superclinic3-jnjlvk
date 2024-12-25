@@ -1,0 +1,55 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: whatsapp-configmap
+  namespace: default
+  labels:
+    app: whatsapp-service
+    component: messaging
+    tier: backend
+    managed-by: kubernetes
+data:
+  # Node.js Environment Settings
+  NODE_ENV: "production"
+  PORT: "3000"
+  WS_PORT: "8080"
+  DEBUG_MODE: "false"
+
+  # WhatsApp Web Integration Settings
+  WHATSAPP_WEB_HOST: "0.0.0.0"
+  WHATSAPP_WEB_PORT: "8080"
+  CONNECTION_TIMEOUT: "30"
+  RECONNECT_DELAY: "5"
+  MAX_RECONNECT_ATTEMPTS: "3"
+  SESSION_TTL: "86400"
+  KEEPALIVE_INTERVAL: "30"
+  SOCKET_TIMEOUT: "60"
+
+  # WhatsApp Business API Settings
+  API_BASE_URL: "https://graph.facebook.com/v17.0"
+  RATE_LIMIT_KEY_PREFIX: "whatsapp:business:rate:"
+  MAX_MESSAGES_PER_DAY: "1000"
+  MESSAGE_PROCESSING_TIMEOUT: "500"
+  MAX_RETRIES: "3"
+  RETRY_DELAY: "5"
+  ERROR_RETRY_BACKOFF: "exponential"
+
+  # Queue and Processing Settings
+  QUEUE_BATCH_SIZE: "100"
+  QUEUE_PROCESSING_INTERVAL: "1000"
+  MAX_CONCURRENT_CONNECTIONS: "1000"
+  MAX_PAYLOAD_SIZE: "16384"
+  COMPRESSION_ENABLED: "true"
+
+  # Redis Configuration
+  REDIS_HOST: "redis-service"
+  REDIS_PORT: "6379"
+  REDIS_DB: "0"
+
+  # Monitoring and Observability
+  LOG_LEVEL: "info"
+  METRICS_PORT: "9090"
+  METRICS_PATH: "/metrics"
+  PROM_METRICS_PREFIX: "whatsapp_service_"
+  HEALTH_CHECK_PATH: "/health"
+  READINESS_CHECK_PATH: "/ready"
