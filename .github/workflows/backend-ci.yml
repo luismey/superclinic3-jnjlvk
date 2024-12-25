@@ -1,0 +1,142 @@
+name: Backend CI
+
+on:
+  push:
+    paths:
+      - 'src/backend/**'
+      - '.github/workflows/backend-ci.yml'
+  pull_request:
+    paths:
+      - 'src/backend/**'
+      - '.github/workflows/backend-ci.yml'
+
+env:
+  PYTHON_VERSION: "3.11"
+  POETRY_VERSION: "1.7.0"
+  MIN_COVERAGE: "90"
+  MIN_QUALITY_SCORE: "85"
+  PYTHONPATH: "src/backend"
+  ENVIRONMENT: "test"
+
+jobs:
+  test:
+    name: Test and Quality Checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    concurrency:
+      group: backend-ci-${{ github.ref }}
+      cancel-in-progress: true
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install Poetry
+        run: |
+          pip install poetry==${{ env.POETRY_VERSION }}
+          poetry config virtualenvs.create true
+          poetry config virtualenvs.in-project true
+
+      - name: Cache Poetry dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            src/backend/.venv
+            ~/.cache/pypoetry
+          key: ${{ runner.os }}-poetry-${{ hashFiles('src/backend/poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-
+
+      - name: Install dependencies
+        working-directory: src/backend
+        run: |
+          poetry install --no-interaction --no-root --with dev,monitoring
+          poetry show
+
+      - name: Run code formatting check
+        working-directory: src/backend
+        run: |
+          poetry run black . --check
+          poetry run isort . --check-only
+
+      - name: Run linting
+        working-directory: src/backend
+        run: |
+          poetry run flake8 .
+          poetry run pylint app tests --rcfile=.pylintrc
+
+      - name: Run type checking
+        working-directory: src/backend
+        run: |
+          poetry run mypy app tests
+
+      - name: Run security scan
+        working-directory: src/backend
+        run: |
+          poetry run bandit -r app -c pyproject.toml
+          poetry run pip-audit
+
+      - name: Run tests with coverage
+        working-directory: src/backend
+        run: |
+          poetry run pytest \
+            --cov=app \
+            --cov-report=xml \
+            --cov-report=term-missing \
+            --cov-fail-under=${{ env.MIN_COVERAGE }} \
+            --junitxml=test-results.xml
+
+      - name: Calculate quality score
+        working-directory: src/backend
+        run: |
+          QUALITY_SCORE=$(poetry run pylint app --rcfile=.pylintrc --score=yes | grep -oP 'Your code has been rated at \K[0-9.]+')
+          echo "Quality Score: $QUALITY_SCORE"
+          if (( $(echo "$QUALITY_SCORE < ${{ env.MIN_QUALITY_SCORE }}" | bc -l) )); then
+            echo "Quality score below minimum threshold of ${{ env.MIN_QUALITY_SCORE }}"
+            exit 1
+          fi
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: |
+            src/backend/coverage.xml
+            src/backend/test-results.xml
+          retention-days: 30
+
+      - name: Upload coverage to Codecov
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: codecov/codecov-action@v3
+        with:
+          file: src/backend/coverage.xml
+          fail_ci_if_error: true
+
+      - name: Check dependencies for updates
+        working-directory: src/backend
+        run: poetry show --outdated
+
+      - name: Notify on failure
+        if: failure()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { repo, owner } = context.repo;
+            const run_id = context.runId;
+            const run_url = `https://github.com/${owner}/${repo}/actions/runs/${run_id}`;
+            const message = `❌ Backend CI failed for ${context.sha}\nSee: ${run_url}`;
+            
+            github.rest.issues.create({
+              owner,
+              repo,
+              title: '🚨 Backend CI Pipeline Failure',
+              body: message,
+              labels: ['ci-failure', 'backend']
+            });
