@@ -1,0 +1,118 @@
+Copyright (c) 2024 Porfin Technologies LTDA.
+All rights reserved.
+
+PORFIN COMMERCIAL LICENSE AGREEMENT
+Version 1.0 - January 2024
+
+1. COPYRIGHT NOTICE
+This software and associated documentation files (the "Software"), including all 
+intellectual property rights, copyrights, patents, trade secrets, and trademarks, 
+are owned by Porfin Technologies LTDA. ("Porfin").
+
+"Porfin" and associated logos are trademarks of Porfin Technologies LTDA.
+WhatsApp® is a registered trademark of Meta Platforms, Inc.
+
+2. LICENSE TERMS
+Subject to payment of applicable subscription fees, Porfin grants you a non-exclusive, 
+non-transferable, revocable license to use the Software under the following terms:
+
+2.1. Subscription Terms
+- License duration is limited to active subscription period
+- Fees are payable in advance as per subscription plan
+- Porfin reserves right to modify pricing with 30 days notice
+
+2.2. Territory Restrictions
+- Usage limited to Brazilian territory
+- Data processing within Brazilian jurisdiction
+- Subject to Brazilian laws and regulations
+
+2.3. API Usage Limitations
+- WhatsApp Business API usage per Meta Platform terms
+- OpenAI API usage per OpenAI terms of service
+- Subject to rate limiting and fair usage policies
+
+3. USAGE RIGHTS
+3.1. Permitted Use Cases
+- Business communication automation via WhatsApp
+- AI-powered virtual assistant deployment
+- Customer engagement and campaign management
+- Integration with authorized third-party services
+
+3.2. User & Access Limitations
+- Limited to purchased user/account quantities
+- Single business entity per subscription
+- Named user accounts only, no sharing
+- API access restricted to licensed features
+
+4. RESTRICTIONS
+4.1. Prohibited Actions
+- Resale, sublicense, or distribution of the Software
+- Modification or derivative works creation
+- Reverse engineering or decompilation
+- Removal of proprietary notices
+- Use for unlawful purposes
+
+4.2. API & Integration Restrictions
+- WhatsApp API usage per Meta Platform guidelines
+- AI model usage within OpenAI terms
+- No unauthorized third-party integrations
+- No automated bulk messaging abuse
+
+5. DATA PRIVACY (LGPD COMPLIANCE)
+5.1. Data Processing
+- Compliance with Lei Geral de Proteção de Dados (LGPD)
+- Processing limited to specified business purposes
+- Implementation of required security measures
+- Respect for data subject rights
+
+5.2. Data Handling Requirements
+- Secure storage within Brazilian territory
+- Limited retention periods
+- Data minimization principles
+- Transparent processing practices
+
+5.3. User Rights
+- Access to personal data
+- Correction of inaccurate data
+- Data portability options
+- Deletion upon subscription termination
+
+6. LIABILITY & WARRANTIES
+6.1. Service Warranty Disclaimer
+THE SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND. PORFIN MAKES NO 
+WARRANTIES, EXPRESS OR IMPLIED, REGARDING RELIABILITY, AVAILABILITY, OR FITNESS 
+FOR A PARTICULAR PURPOSE.
+
+6.2. Specific Disclaimers
+- No guarantee of WhatsApp message delivery
+- No warranty on AI model outputs or accuracy
+- No assurance of uninterrupted service
+- No liability for data accuracy or completeness
+
+6.3. Limitation of Liability
+IN NO EVENT SHALL PORFIN BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, 
+EXEMPLARY, OR CONSEQUENTIAL DAMAGES, INCLUDING BUT NOT LIMITED TO:
+- Loss of profits or revenue
+- Business interruption
+- Data loss or corruption
+- Cost of substitute services
+
+7. TERMINATION
+Porfin may terminate this license immediately upon:
+- Violation of license terms
+- Subscription payment default
+- Unauthorized use or access
+- Legal or regulatory requirements
+
+8. GOVERNING LAW
+This agreement is governed by Brazilian law. Any disputes shall be resolved in 
+the courts of São Paulo, Brazil.
+
+9. CONTACT INFORMATION
+Porfin Technologies LTDA.
+[Legal Address]
+São Paulo, SP - Brazil
+Email: legal@porfin.com.br
+
+By using the Software, you acknowledge that you have read, understood, and agree 
+to be bound by this License Agreement.
