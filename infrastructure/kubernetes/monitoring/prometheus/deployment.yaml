@@ -1,0 +1,106 @@
+# Prometheus Deployment Configuration
+# Version: v2.45.0
+# Purpose: Deploy Prometheus monitoring server with enhanced security, resource management and health monitoring
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus
+  namespace: monitoring
+  labels:
+    app: prometheus
+    component: monitoring
+    version: v2.45.0
+spec:
+  # Single replica as Prometheus is stateful and uses persistent storage
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prometheus
+  template:
+    metadata:
+      labels:
+        app: prometheus
+        version: v2.45.0
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+    spec:
+      # Enhanced security context for pod
+      securityContext:
+        fsGroup: 65534  # nobody user
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      
+      # Grace period for clean shutdown
+      terminationGracePeriodSeconds: 300
+      
+      containers:
+      - name: prometheus
+        image: prom/prometheus:v2.45.0
+        args:
+          - --config.file=/etc/prometheus/prometheus.yml
+          - --storage.tsdb.path=/prometheus
+          - --storage.tsdb.retention.time=15d
+          - --web.console.libraries=/usr/share/prometheus/console_libraries
+          - --web.console.templates=/usr/share/prometheus/consoles
+          - --web.enable-lifecycle
+        
+        ports:
+          - name: prometheus
+            containerPort: 9090
+            protocol: TCP
+        
+        # Resource limits and requests
+        resources:
+          requests:
+            cpu: 500m
+            memory: 2Gi
+          limits:
+            cpu: 1000m
+            memory: 4Gi
+        
+        # Volume mounts for config and storage
+        volumeMounts:
+          - name: prometheus-config
+            mountPath: /etc/prometheus
+            readOnly: true
+          - name: prometheus-storage
+            mountPath: /prometheus
+        
+        # Liveness probe to detect application health
+        livenessProbe:
+          httpGet:
+            path: /-/healthy
+            port: 9090
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+          periodSeconds: 10
+          failureThreshold: 3
+        
+        # Readiness probe to check if application can serve traffic
+        readinessProbe:
+          httpGet:
+            path: /-/ready
+            port: 9090
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+          periodSeconds: 10
+          failureThreshold: 3
+        
+        # Enhanced container security context
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsUser: 65534  # nobody user
+          runAsGroup: 65534
+          runAsNonRoot: true
+      
+      # Volume definitions
+      volumes:
+        - name: prometheus-config
+          configMap:
+            name: prometheus-config
+        - name: prometheus-storage
+          persistentVolumeClaim:
+            claimName: prometheus-storage
