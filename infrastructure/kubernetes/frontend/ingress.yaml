@@ -1,0 +1,82 @@
+# External dependencies:
+# - cert-manager v1.12.0: Automated TLS certificate management
+# - ingress-nginx v1.8.0: Ingress controller for advanced routing and security features
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: frontend-ingress
+  namespace: default
+  labels:
+    app: frontend
+    component: web
+    environment: production
+  annotations:
+    # Ingress Controller Configuration
+    kubernetes.io/ingress.class: "gce"
+    
+    # TLS/Certificate Configuration
+    kubernetes.io/tls-acme: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    cert-manager.io/min-tls-version: "1.3"
+    
+    # SSL Redirect Configuration
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    
+    # Proxy Configuration
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    
+    # Security Headers
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "X-Frame-Options: DENY";
+      more_set_headers "X-Content-Type-Options: nosniff";
+      more_set_headers "X-XSS-Protection: 1; mode=block";
+      more_set_headers "Strict-Transport-Security: max-age=31536000; includeSubDomains; preload";
+      more_set_headers "Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';";
+    
+    # CORS Configuration
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+    nginx.ingress.kubernetes.io/cors-max-age: "3600"
+    
+    # Rate Limiting
+    nginx.ingress.kubernetes.io/limit-rps: "100"
+    nginx.ingress.kubernetes.io/limit-burst-multiplier: "2"
+    
+    # Monitoring and Metrics
+    nginx.ingress.kubernetes.io/enable-access-log: "true"
+    nginx.ingress.kubernetes.io/enable-error-log: "true"
+    nginx.ingress.kubernetes.io/enable-ssl-log: "true"
+    nginx.ingress.kubernetes.io/log-format-upstream: '{"time": "$time_iso8601", "remote_addr": "$remote_addr", "request_id": "$req_id", "request_method": "$request_method", "request_uri": "$request_uri", "status": "$status", "request_time": "$request_time", "bytes_sent": "$bytes_sent", "http_referer": "$http_referer", "http_user_agent": "$http_user_agent", "ssl_protocol": "$ssl_protocol", "ssl_cipher": "$ssl_cipher"}'
+
+spec:
+  tls:
+    - hosts:
+        - porfin.com
+        - www.porfin.com
+      secretName: frontend-tls
+  rules:
+    - host: porfin.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend-service
+                port:
+                  number: 80
+    - host: www.porfin.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend-service
+                port:
+                  number: 80
