@@ -1,0 +1,168 @@
+# Grafana v9.0.0 Configuration ConfigMap
+# Purpose: Provides comprehensive Grafana server configuration with enhanced security,
+# optimized performance settings, and automated dashboard provisioning
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-config
+  namespace: monitoring
+  labels:
+    app: grafana
+    component: monitoring
+    version: "9.0.0"
+data:
+  grafana.ini: |
+    # Server Configuration
+    [server]
+    protocol = http
+    domain = grafana.porfin.local
+    root_url = %(protocol)s://%(domain)s/
+    serve_from_sub_path = true
+    read_timeout = 30s
+    write_timeout = 30s
+    enable_gzip = true
+    
+    # Database Configuration
+    [database]
+    type = sqlite3
+    path = /var/lib/grafana/grafana.db
+    max_idle_conn = 10
+    max_open_conn = 100
+    
+    # Security Configuration
+    [security]
+    admin_user = ${GRAFANA_ADMIN_USER}
+    admin_password = ${GRAFANA_ADMIN_PASSWORD}
+    secret_key = ${GRAFANA_SECRET_KEY}
+    cookie_secure = true
+    cookie_samesite = strict
+    allow_embedding = false
+    strict_transport_security = true
+    strict_transport_security_max_age_seconds = 31536000
+    
+    # Authentication Configuration
+    [auth]
+    disable_login_form = false
+    disable_signout_menu = false
+    login_maximum_inactive_lifetime_duration = 7d
+    login_maximum_lifetime_duration = 30d
+    oauth_auto_login = false
+    
+    # User Configuration
+    [users]
+    allow_sign_up = false
+    auto_assign_org = true
+    auto_assign_org_role = Viewer
+    default_theme = light
+    
+    # Session Configuration
+    [session]
+    provider = file
+    provider_config = sessions
+    cookie_name = grafana_session
+    cookie_secure = true
+    session_life_time = 86400
+    
+    # Analytics & Reporting
+    [analytics]
+    reporting_enabled = true
+    check_for_updates = true
+    
+    # Metrics Collection
+    [metrics]
+    enabled = true
+    interval_seconds = 15
+    
+    # Dashboards Configuration
+    [dashboards]
+    default_home_dashboard_path = /etc/grafana/dashboards/application-metrics.json
+    min_refresh_interval = 15s
+    versions_to_keep = 20
+    
+    # Paths Configuration
+    [paths]
+    provisioning = /etc/grafana/provisioning
+    data = /var/lib/grafana
+    logs = /var/log/grafana
+    plugins = /var/lib/grafana/plugins
+    
+    # Alerting Configuration
+    [alerting]
+    enabled = true
+    execute_alerts = true
+    evaluation_timeout_seconds = 30
+    notification_timeout_seconds = 30
+    max_attempts = 3
+    
+    # Unified Alerting
+    [unified_alerting]
+    enabled = true
+    
+    # Log Configuration
+    [log]
+    mode = console file
+    level = info
+    filters = rendering:debug
+
+  datasources.yaml: |
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        access: proxy
+        url: http://prometheus-server:9090
+        isDefault: true
+        version: 1
+        editable: false
+        jsonData:
+          timeInterval: "15s"
+          queryTimeout: "30s"
+          httpMethod: "POST"
+          manageAlerts: true
+        secureJsonData:
+          httpHeaderValue1: "${PROMETHEUS_AUTH_TOKEN}"
+
+  dashboards.yaml: |
+    apiVersion: 1
+    providers:
+      - name: 'default'
+        orgId: 1
+        folder: ''
+        type: file
+        disableDeletion: true
+        editable: false
+        updateIntervalSeconds: 15
+        allowUiUpdates: false
+        options:
+          path: /etc/grafana/dashboards
+          foldersFromFilesStructure: true
+        
+      - name: 'system-metrics'
+        orgId: 1
+        folder: 'System'
+        type: file
+        disableDeletion: true
+        editable: false
+        updateIntervalSeconds: 15
+        options:
+          path: /etc/grafana/dashboards/system-metrics.json
+          
+      - name: 'application-metrics'
+        orgId: 1
+        folder: 'Application'
+        type: file
+        disableDeletion: true
+        editable: false
+        updateIntervalSeconds: 15
+        options:
+          path: /etc/grafana/dashboards/application-metrics.json
+          
+      - name: 'business-metrics'
+        orgId: 1
+        folder: 'Business'
+        type: file
+        disableDeletion: true
+        editable: false
+        updateIntervalSeconds: 15
+        options:
+          path: /etc/grafana/dashboards/business-metrics.json
