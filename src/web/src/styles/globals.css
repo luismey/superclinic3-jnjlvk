@@ -1,0 +1,100 @@
+/* Tailwind CSS v3.3.0 - Core framework imports */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base layer customizations */
+@layer base {
+  /* Root HTML element styles */
+  html {
+    font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    color: theme('colors.secondary.900');
+    background-color: theme('colors.secondary.50');
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Text selection styles */
+  html ::selection {
+    background-color: theme('colors.primary.100');
+    color: theme('colors.primary.900');
+  }
+
+  /* Body element styles */
+  body {
+    min-height: 100vh;
+    overflow-x: hidden;
+    transition-property: background-color, color;
+    transition-duration: 150ms;
+    transition-timing-function: ease-in-out;
+    scroll-margin-top: 6rem;
+    scroll-padding-top: 6rem;
+  }
+
+  /* Global focus styles for accessibility - WCAG 2.1 AA compliant */
+  *:focus {
+    outline: 2px solid theme('colors.primary.500');
+    outline-offset: 2px;
+    ring: 2px;
+    ring-color: theme('colors.primary.500');
+    ring-offset: 2px;
+    ring-offset-color: theme('colors.white');
+    transition: outline 150ms ease, ring 150ms ease;
+  }
+
+  /* Enhanced focus styles for keyboard navigation */
+  *:focus-visible {
+    outline: 2px solid theme('colors.primary.500');
+    outline-offset: 4px;
+    ring: 4px;
+    ring-color: theme('colors.primary.500');
+    ring-offset: 4px;
+    ring-offset-color: theme('colors.white');
+  }
+
+  /* Responsive media query adjustments */
+  @media (max-width: 768px) {
+    html {
+      font-size: 14px; /* Slightly smaller base font size for mobile */
+    }
+
+    body {
+      scroll-margin-top: 4rem;
+      scroll-padding-top: 4rem;
+    }
+  }
+
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    html {
+      color: theme('colors.secondary.950');
+      background-color: theme('colors.white');
+    }
+
+    *:focus,
+    *:focus-visible {
+      outline-width: 3px;
+      outline-color: theme('colors.primary.700');
+    }
+  }
+
+  /* Reduced motion preferences */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    body {
+      transition: none;
+    }
+
+    *:focus,
+    *:focus-visible {
+      transition: none;
+    }
+  }
+}
