@@ -1,0 +1,22 @@
+.next/**/*
+
+# Dependencies
+node_modules/**/*
+
+# Test coverage reports
+coverage/**/*
+
+# Static assets
+public/**/*
+
+# Generated TypeScript declarations
+next-env.d.ts
+
+# Configuration files
+*.config.js
+
+# Test setup files
+*.setup.ts
+
+# Build output
+build/**/*
