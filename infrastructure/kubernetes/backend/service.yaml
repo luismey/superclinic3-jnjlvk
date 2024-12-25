@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+  namespace: default
+  labels:
+    app: porfin
+    component: backend
+    environment: production
+  annotations:
+    # Enable Google Cloud NEG integration for ingress
+    cloud.google.com/neg: '{"ingress": true}'
+    # Associate with backend config for health checks and security
+    cloud.google.com/backend-config: '{"default": "backend-config"}'
+    # Define protocol for the service
+    cloud.google.com/app-protocols: '{"http": "HTTP"}'
+    # Enable Prometheus metrics scraping
+    prometheus.io/scrape: 'true'
+    prometheus.io/port: '8000'
+spec:
+  # Internal service type for cluster-only access
+  type: ClusterIP
+  ports:
+    # Main application port
+    - name: http
+      port: 80
+      targetPort: 8000
+      protocol: TCP
+    # Metrics port for monitoring
+    - name: metrics
+      port: 8000
+      targetPort: 8000
+      protocol: TCP
+  # Label selector to match backend pods
+  selector:
+    app: porfin
+    component: backend
+  # Disable session affinity for better load distribution
+  sessionAffinity: None
+  # Only publish pods that pass readiness checks
+  publishNotReadyAddresses: false
