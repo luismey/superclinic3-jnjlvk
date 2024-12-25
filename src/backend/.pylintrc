@@ -1,0 +1,114 @@
+[MASTER]
+# Specify plugins and configuration
+ignore=CVS,.git,.pytest_cache,__pycache__,migrations
+persistent=yes
+load-plugins=pylint_pydantic
+jobs=0
+unsafe-load-any-extension=no
+extension-pkg-whitelist=pydantic
+
+[MESSAGES CONTROL]
+# Disable specific warnings that conflict with FastAPI patterns or are too restrictive
+disable=C0111,  # missing-docstring
+        C0103,  # invalid-name
+        C0302,  # too-many-lines
+        W0511,  # fixme
+        R0903,  # too-few-public-methods (for Pydantic models)
+        R0913,  # too-many-arguments
+        W0621,  # redefined-outer-name
+        W0212,  # protected-access
+        W0703,  # broad-except
+        broad-except,
+        cyclic-import,
+        too-many-arguments,
+        too-many-instance-attributes,
+        too-few-public-methods,
+        missing-docstring,
+        protected-access,
+        invalid-name
+
+[REPORTS]
+# Output format configuration
+output-format=text
+files-output=no
+reports=no
+# Custom evaluation formula to ensure 85% minimum quality score
+evaluation=10.0 - ((float(5 * error + warning + refactor + convention) / statement) * 10)
+
+[BASIC]
+# Naming conventions
+good-names=i,j,k,ex,Run,_,id,db
+bad-names=foo,bar,baz,toto,tutu,tata
+name-group=
+include-naming-hint=no
+function-rgx=[a-z_][a-z0-9_]{2,50}$
+variable-rgx=[a-z_][a-z0-9_]{2,50}$
+const-rgx=(([A-Z_][A-Z0-9_]*)|(__.*__))$
+attr-rgx=[a-z_][a-z0-9_]{2,50}$
+argument-rgx=[a-z_][a-z0-9_]{2,50}$
+class-attribute-rgx=([A-Za-z_][A-Za-z0-9_]{2,50}|(__.*__))$
+inlinevar-rgx=[A-Za-z_][A-Za-z0-9_]*$
+class-rgx=[A-Z_][a-zA-Z0-9]+$
+module-rgx=(([a-z_][a-z0-9_]*)|([A-Z][a-zA-Z0-9]+))$
+method-rgx=[a-z_][a-z0-9_]{2,50}$
+no-docstring-rgx=^_
+docstring-min-length=-1
+
+[FORMAT]
+# Code formatting rules
+max-line-length=100
+ignore-long-lines=^\s*(# )?<?https?://\S+>?$
+single-line-if-stmt=no
+no-space-check=trailing-comma,dict-separator
+max-module-lines=2000
+indent-string='    '
+
+[SIMILARITIES]
+# Duplicate code detection
+min-similarity-lines=6
+ignore-comments=yes
+ignore-docstrings=yes
+ignore-imports=yes
+
+[TYPECHECK]
+# Type checking settings
+ignore-mixin-members=yes
+ignored-classes=SQLObject
+unsafe-load-any-extension=yes
+generated-members=
+
+[VARIABLES]
+# Variable checking settings
+init-import=no
+dummy-variables-rgx=_$|dummy
+additional-builtins=
+
+[CLASSES]
+# Class checking settings
+ignore-iface-methods=isImplementedBy,deferred,extends,names,namesAndDescriptions,queryDescriptionFor,getBases,getDescriptionFor,getDoc,getName,getTaggedValue,getTaggedValueTags,isEqualOrExtendedBy,setTaggedValue,isImplementedByInstancesOf,adaptWith,is_implemented_by
+defining-attr-methods=__init__,__new__,setUp
+valid-classmethod-first-arg=cls
+valid-metaclass-classmethod-first-arg=mcs
+
+[DESIGN]
+# Design checking settings - adjusted for microservices
+max-args=10
+max-locals=20
+max-returns=8
+max-branches=15
+max-statements=50
+max-parents=7
+max-attributes=10
+min-public-methods=1
+max-public-methods=20
+
+[IMPORTS]
+# Import checking settings
+deprecated-modules=regsub,TERMIOS,Bastion,rexec
+import-graph=
+ext-import-graph=
+int-import-graph=
+
+[EXCEPTIONS]
+# Exception handling settings
+overgeneral-exceptions=Exception
