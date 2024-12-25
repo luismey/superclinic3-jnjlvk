@@ -1,0 +1,44 @@
+# Redis Service manifest for Porfin platform
+# Provides network identity and load balancing for Redis cache instances
+# Version: v1
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: redis-service
+  namespace: porfin-cache
+  labels:
+    app: redis
+    component: cache
+    tier: data
+    environment: production
+    managed-by: kubernetes
+  annotations:
+    service.beta.kubernetes.io/description: "Redis cache service for session management and message queuing"
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9121"
+
+spec:
+  # Headless service for StatefulSet pod identity
+  clusterIP: None
+  
+  # Selector matches StatefulSet pod labels
+  selector:
+    app: redis
+    component: cache
+  
+  # Port configuration for Redis and metrics
+  ports:
+    - name: redis
+      port: 6379
+      targetPort: 6379
+      protocol: TCP
+    - name: metrics
+      port: 9121
+      targetPort: 9121
+      protocol: TCP
+  
+  # Service type and session handling
+  type: ClusterIP
+  sessionAffinity: None
+  publishNotReadyAddresses: false
