@@ -1,0 +1,54 @@
+# Last Updated: 2024
+# Contact: No email contact - managed through platform
+
+User-agent: *
+# Allow public content
+Allow: /
+Allow: /public/
+Allow: /about/
+Allow: /contact/
+Allow: /pricing/
+Allow: /features/
+Allow: /blog/
+Allow: /help/
+Allow: /terms/
+Allow: /privacy/
+
+# Protect sensitive routes and authenticated sections
+Disallow: /api/
+Disallow: /dashboard/
+Disallow: /settings/
+Disallow: /chats/
+Disallow: /campaigns/
+Disallow: /assistants/
+Disallow: /admin/
+Disallow: /account/
+Disallow: /billing/
+Disallow: /analytics/
+Disallow: /webhooks/
+Disallow: /integrations/
+Disallow: /*.json$
+Disallow: /*?*
+
+# Prevent crawling of authentication flows
+Disallow: /login/
+Disallow: /signup/
+Disallow: /reset-password/
+Disallow: /verify/
+Disallow: /oauth/
+
+# Prevent access to dynamic content generators
+Disallow: /generate/
+Disallow: /preview/
+Disallow: /temp/
+Disallow: /download/
+
+# Crawl delay to prevent server overload
+Crawl-delay: 10
+
+# Reference to sitemap for public content
+Sitemap: https://porfin.com/sitemap.xml
+
+# Additional crawler directives
+Request-rate: 1/10              # One request per 10 seconds
+Visit-time: 0600-2200          # Allow crawling between 6 AM and 10 PM
