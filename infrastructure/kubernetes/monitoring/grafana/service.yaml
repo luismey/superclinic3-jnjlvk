@@ -1,0 +1,37 @@
+# Kubernetes Service manifest for Grafana monitoring dashboard
+# Exposes Grafana metrics visualization UI on port 3000 within the cluster
+# Version: v1
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: grafana-service
+  namespace: monitoring
+  labels:
+    app: grafana
+    component: monitoring
+    tier: visualization
+    part-of: monitoring-stack
+  annotations:
+    description: "Grafana dashboard service for monitoring system metrics and KPIs"
+    monitoring.porfin.io/port: "3000"
+    monitoring.porfin.io/path: "/metrics"
+
+spec:
+  type: ClusterIP  # Internal cluster access only
+  ports:
+    - name: http
+      port: 3000  # Service port
+      targetPort: 3000  # Container port
+      protocol: TCP
+  
+  # Select Grafana pods using label selector
+  selector:
+    app: grafana
+  
+  # Session handling configuration  
+  sessionAffinity: None
+  publishNotReadyAddresses: false
+
+  # Internal traffic policy for improved security
+  internalTrafficPolicy: Cluster
