@@ -1,0 +1,43 @@
+File Format: ICO (Windows Icon)
+Dimensions: Multi-resolution icon containing 16x16, 32x32, and 48x48 pixel versions
+Color Depth: 32-bit (True Color with Alpha)
+Primary Color: #2563eb (Brand Blue)
+Background: Transparent
+Design: Minimalist "P" lettermark
+File Size: Optimized for web delivery
+Features:
+- Alpha channel transparency
+- Pixel-perfect hinting
+- Dark/light theme adaptability
+- High contrast ratio
+- WCAG 2.1 AA compliant
+
+The icon should be created using professional icon editing software with the following characteristics:
+
+1. Design:
+- Clean, minimalist "P" lettermark
+- Primary brand color #2563eb
+- Transparent background
+- Crisp edges with anti-aliasing
+- Pixel-perfect alignment
+
+2. Multiple Resolutions:
+- 16x16: Simplified version for browser tabs
+- 32x32: Standard resolution for bookmarks
+- 48x48: Enhanced detail for PWA and larger displays
+
+3. Optimization:
+- Lossless compression
+- Pixel hinting enabled
+- Optimized file size
+- No color palette reduction
+
+4. Technical Requirements:
+- ICO format with embedded PNG data
+- 32-bit color depth (24-bit color + 8-bit alpha)
+- Proper alpha channel implementation
+- Color profile: sRGB
+
+The icon should be delivered with:
+Cache-Control: public, max-age=86400
+Content-Type: image/x-icon
