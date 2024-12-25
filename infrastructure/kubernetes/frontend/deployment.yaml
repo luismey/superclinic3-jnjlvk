@@ -1,0 +1,107 @@
+# Frontend Deployment manifest for Porfin Next.js application
+# Base image: node:18-alpine
+# Supports high availability with multi-zone deployment and auto-scaling
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: default
+  labels:
+    app: frontend
+    component: web
+    tier: frontend
+spec:
+  # Initial replica count based on scaling configuration
+  replicas: 3
+  # Rolling update strategy for zero-downtime deployments
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  # Pod selector for the deployment
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+      # Prometheus monitoring annotations
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3000"
+        prometheus.io/path: "/metrics"
+    spec:
+      # Pod anti-affinity for high availability across nodes
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - frontend
+              topologyKey: kubernetes.io/hostname
+      # Container specifications
+      containers:
+      - name: frontend
+        image: gcr.io/porfin/frontend:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3000
+          protocol: TCP
+        # Resource requests and limits for performance optimization
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "256Mi"
+          limits:
+            cpu: "500m"
+            memory: "768Mi"
+        # Liveness probe for container health monitoring
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 15
+          periodSeconds: 30
+        # Readiness probe for traffic routing
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 15
+          periodSeconds: 10
+        # Environment configuration from ConfigMap
+        envFrom:
+        - configMapRef:
+            name: frontend-config
+        # Security context for container hardening
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+        # Volume mounts for temporary storage
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+      # Volumes definition
+      volumes:
+      - name: tmp
+        emptyDir: {}
+      # Pod security context
+      securityContext:
+        fsGroup: 1000
+      # Topology spread constraints for zone distribution
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: topology.kubernetes.io/zone
+        whenUnsatisfied: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app: frontend
