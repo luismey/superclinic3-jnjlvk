@@ -1,0 +1,38 @@
+# Frontend Service Manifest
+# Version: v1
+# Purpose: Exposes Next.js frontend application internally with load balancing
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+  namespace: default
+  labels:
+    app: frontend
+    component: web
+    tier: frontend
+    environment: production
+  annotations:
+    # Enable Google Cloud NEG for ingress integration
+    cloud.google.com/neg: '{"ingress": true}'
+    # Associate with backend config for advanced load balancing settings
+    cloud.google.com/backend-config: '{"default": "frontend-backend-config"}'
+    # Enable Prometheus metrics scraping
+    prometheus.io/scrape: 'true'
+    prometheus.io/port: '3000'
+    prometheus.io/path: '/metrics'
+spec:
+  # Use ClusterIP for internal access only
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 80  # Service port
+      targetPort: 3000  # Container port
+      protocol: TCP
+  # Pod selector for service discovery
+  selector:
+    app: frontend
+    component: web
+  # Disable session affinity for better load distribution
+  sessionAffinity: None
+  # Don't publish pods that aren't ready
+  publishNotReadyAddresses: false
