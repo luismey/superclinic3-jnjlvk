@@ -1,0 +1,207 @@
+name: Frontend CI
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'src/web/**'
+      - '.github/workflows/frontend-ci.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'src/web/**'
+      - '.github/workflows/frontend-ci.yml'
+
+env:
+  NODE_VERSION: '18.17.0'
+  NEXT_TELEMETRY_DISABLED: 1
+  COVERAGE_THRESHOLD: 90
+
+# Limit permissions for security
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
+jobs:
+  setup:
+    name: Setup and Install
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/web
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'yarn'
+          cache-dependency-path: src/web/yarn.lock
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Cache node_modules
+        uses: actions/cache@v3
+        id: node-modules-cache
+        with:
+          path: src/web/node_modules
+          key: ${{ runner.os }}-modules-${{ hashFiles('src/web/yarn.lock') }}
+
+  type-check:
+    name: Type Checking
+    needs: setup
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/web
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      
+      - name: Restore node_modules
+        uses: actions/cache@v3
+        with:
+          path: src/web/node_modules
+          key: ${{ runner.os }}-modules-${{ hashFiles('src/web/yarn.lock') }}
+
+      - name: Run TypeScript compilation check
+        run: yarn type-check
+
+  lint:
+    name: Linting and Formatting
+    needs: setup
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/web
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      
+      - name: Restore node_modules
+        uses: actions/cache@v3
+        with:
+          path: src/web/node_modules
+          key: ${{ runner.os }}-modules-${{ hashFiles('src/web/yarn.lock') }}
+
+      - name: Run ESLint
+        run: yarn lint
+
+      - name: Check formatting
+        run: yarn prettier --check "src/**/*.{ts,tsx}"
+
+  test:
+    name: Tests and Coverage
+    needs: setup
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/web
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      
+      - name: Restore node_modules
+        uses: actions/cache@v3
+        with:
+          path: src/web/node_modules
+          key: ${{ runner.os }}-modules-${{ hashFiles('src/web/yarn.lock') }}
+
+      - name: Run tests with coverage
+        run: yarn test:coverage
+        env:
+          CI: true
+
+      - name: Verify coverage threshold
+        run: |
+          COVERAGE=$(cat coverage/coverage-summary.json | jq -r '.total.lines.pct')
+          if (( $(echo "$COVERAGE < $COVERAGE_THRESHOLD" | bc -l) )); then
+            echo "Coverage ($COVERAGE%) is below threshold ($COVERAGE_THRESHOLD%)"
+            exit 1
+          fi
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: src/web/coverage
+          retention-days: 14
+
+  build:
+    name: Production Build
+    needs: [type-check, lint, test]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/web
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      
+      - name: Restore node_modules
+        uses: actions/cache@v3
+        with:
+          path: src/web/node_modules
+          key: ${{ runner.os }}-modules-${{ hashFiles('src/web/yarn.lock') }}
+
+      - name: Build application
+        run: yarn build
+        env:
+          CI: true
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-output
+          path: src/web/.next
+          retention-days: 14
+
+  security-scan:
+    name: Security Scanning
+    needs: setup
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/web
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Run npm audit
+        run: npm audit --production
+
+      - name: Run yarn audit
+        run: yarn audit
+
+  notify:
+    name: Notification
+    needs: [build, security-scan]
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Check workflow status
+        if: ${{ contains(needs.*.result, 'failure') }}
+        run: exit 1
