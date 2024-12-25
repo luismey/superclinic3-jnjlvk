@@ -1,0 +1,49 @@
+**/__pycache__
+**/*.pyc
+**/*.pyo
+**/*.pyd
+.pytest_cache
+
+# Test and coverage
+.coverage
+htmlcov
+tests
+**/__snapshots__
+
+# Version control
+.git
+.gitignore
+
+# Environment and configuration
+.env
+.env.*
+.venv
+poetry.lock
+
+# IDE and editor files
+.vscode
+.idea
+**/*.swp
+**/*.swo
+
+# Documentation
+docs
+README.md
+
+# Docker files
+docker-compose*.yml
+.dockerignore
+
+# System files
+**/.DS_Store
+**/*.log
+
+# Build and distribution
+*.egg-info
+dist
+build
+
+# Development artifacts
+.coverage
+htmlcov
+poetry.lock
