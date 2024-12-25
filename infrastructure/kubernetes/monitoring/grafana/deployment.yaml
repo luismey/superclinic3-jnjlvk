@@ -1,0 +1,161 @@
+# Grafana Deployment Manifest
+# Version: 9.5.3
+# Purpose: Production-grade Grafana deployment with enhanced security and monitoring capabilities
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  namespace: monitoring
+  labels:
+    app: grafana
+    component: monitoring
+    version: "9.5.3"
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "3000"
+    prometheus.io/path: "/metrics"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0  # Zero downtime updates
+      maxSurge: 1        # Allow one extra pod during updates
+  template:
+    metadata:
+      labels:
+        app: grafana
+        version: "9.5.3"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3000"
+        prometheus.io/path: "/metrics"
+    spec:
+      # Security Context for Pod
+      securityContext:
+        fsGroup: 472            # Grafana user ID
+        runAsUser: 472          # Run as grafana user
+        runAsNonRoot: true      # Enforce non-root execution
+        seccompProfile:
+          type: RuntimeDefault  # Enable default seccomp profile
+      
+      # Init container to set correct permissions
+      initContainers:
+        - name: init-chown-data
+          image: busybox:1.35
+          command:
+            - chown
+            - "-R"
+            - "472:472"
+            - "/var/lib/grafana"
+          volumeMounts:
+            - name: grafana-storage
+              mountPath: /var/lib/grafana
+          securityContext:
+            runAsUser: 0  # Temporarily run as root for chown
+      
+      # Main Grafana container
+      containers:
+        - name: grafana
+          image: grafana/grafana:9.5.3
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+              name: http
+              protocol: TCP
+          
+          # Container Security Context
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          
+          # Resource Limits
+          resources:
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+          
+          # Volume Mounts
+          volumeMounts:
+            - name: grafana-config
+              mountPath: /etc/grafana
+              readOnly: true
+            - name: grafana-storage
+              mountPath: /var/lib/grafana
+            - name: grafana-dashboards
+              mountPath: /var/lib/grafana/dashboards
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+          
+          # Health Checks
+          startupProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 30
+          
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 30
+            failureThreshold: 10
+          
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 30
+            failureThreshold: 10
+      
+      # Volumes Configuration
+      volumes:
+        - name: grafana-config
+          configMap:
+            name: grafana-config
+        - name: grafana-storage
+          emptyDir: {}
+        - name: grafana-dashboards
+          configMap:
+            name: grafana-dashboards
+        - name: tmp
+          emptyDir: {}
+      
+      # Pod Anti-Affinity for High Availability
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - grafana
+                topologyKey: kubernetes.io/hostname
+      
+      # Topology Spread Constraints
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: grafana
